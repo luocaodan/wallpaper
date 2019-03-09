@@ -3,9 +3,10 @@
     <img id="logo" src="~@/assets/logo.png" alt="electron-vue">
     <main>
       <div class="left-side">
-        <span class="title">
+        <span class="title animated infinite bounce delay-5s">
           Welcome to your new project!
         </span>
+
         <system-information></system-information>
       </div>
 

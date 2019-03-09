@@ -6,10 +6,15 @@
 
 <script>
   export default {
-    name: 'wallpaper'
+    name: 'wallpaper',
+    data() {
+      return {
+      }
+    },
+    mounted() {
+    },
+    methods: {
+    }
   }
-</script>
 
-<style>
-  /* CSS */
-</style>
+</script>
