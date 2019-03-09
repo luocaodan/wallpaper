@@ -26,14 +26,14 @@ function createWindow() {
     height: 600,
     useContentSize: true,
     width: 900,
-    // frame: false,
+    frame: false,
     show: false,
   })
 
   mainWindow.loadURL(winURL)
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    // mainWindow.show()
   })
 
   mainWindow.on('close', (event) => {
@@ -58,17 +58,19 @@ function showMainWindow() {
 function createTray() {
   tray = new Tray(require('path').join(__static, 'tray.png'))
   const contextMenu = Menu.buildFromTemplate([
-    { label: '显示', click: () => showMainWindow() },
+    // { label: '显示', click: () => showMainWindow() },
     { label: '退出', click: () => app.exit(0) },
   ])
 
   tray.setToolTip("Sirga's Wallpaper")
   tray.setContextMenu(contextMenu)
+  /*
   tray.on('click', () => {
     const visible = mainWindow.isVisible();
     visible ? mainWindow.hide() : mainWindow.show()
     mainWindow.setSkipTaskbar(!visible)
   })
+  */
 }
 
 app.on('ready', () => {
