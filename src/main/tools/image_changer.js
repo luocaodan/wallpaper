@@ -5,7 +5,6 @@ export default class {
   constructor(category) {
     const minute = 60 * 1000
     this.imagesService = new ImagesService(category);
-
     setInterval(() => {
       this.imagesService.getNextImage()
         .then(filepath => {
