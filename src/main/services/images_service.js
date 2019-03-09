@@ -36,8 +36,8 @@ export default class ImageService {
         return new Promise((resolve, reject) => {
           reader.on('end', () => {
             this.count++
-            this.prePath = filepath;
             this.deletePrevious();
+            this.prePath = filepath;
             resolve(filepath)
           })
         })
