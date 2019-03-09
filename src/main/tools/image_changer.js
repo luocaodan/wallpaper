@@ -10,6 +10,6 @@ export default class {
         .then(filepath => {
           wallpaper.set(filepath)
         })
-    }, 10 * minute)
+    }, 1 * minute)
   }
 }

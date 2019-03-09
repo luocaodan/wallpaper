@@ -7,7 +7,8 @@ export default class ImageService {
   constructor(category) {
     this.category = category;
     this.endpoint = endpointMap[category];
-    this.count = 39;
+    this.count = 0;
+    this.prePath = ''
   }
 
   getNextImage() {
@@ -35,6 +36,8 @@ export default class ImageService {
         return new Promise((resolve, reject) => {
           reader.on('end', () => {
             this.count++
+            this.prePath = filepath;
+            this.deletePrevious();
             resolve(filepath)
           })
         })
@@ -64,6 +67,15 @@ export default class ImageService {
   getImagesDataUrl() {
     const skip = Math.round(this.count / 20) * 20;
     return `${this.endpoint}?skip=${skip}`;
+  }
+
+  deletePrevious() {
+    if (this.prePath === '') {
+      return;
+    }
+    if (fs.existsSync(this.prePath)) {
+      fs.unlink(this.prePath)
+    }
   }
 }
 
