@@ -76,7 +76,7 @@ function createTray() {
 app.on('ready', () => {
   createTray()
   createWindow()
-  new ImageChanger('美女')
+  new ImageChanger('动漫')
 })
 
 // auto launch
