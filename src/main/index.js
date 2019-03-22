@@ -1,6 +1,9 @@
-import {app, Menu, Tray, BrowserWindow} from 'electron'
+import {app, Menu, Tray, BrowserWindow, nativeImage, ipcMain, dialog} from 'electron'
 import ImageChanger from './tools/image_changer'
 import AutoLaunch from 'auto-launch'
+import {getSettings, saveSettings} from "../configuration";
+import db from '../datastore';
+import Constant from "../constant";
 
 /**
  * Set `__static` path to static files in production
@@ -14,6 +17,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow
 let tray
+let imageChanger
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -28,6 +32,9 @@ function createWindow() {
     width: 900,
     frame: false,
     show: false,
+    icon: nativeImage.createFromPath(
+      require('path').join(__static, 'tray.png')
+    )
   })
 
   mainWindow.loadURL(winURL)
@@ -55,28 +62,75 @@ function showMainWindow() {
   mainWindow.show()
 }
 
+function navigate(route) {
+  showMainWindow();
+  mainWindow.webContents.send('navigate', route);
+}
+
 function createTray() {
   tray = new Tray(require('path').join(__static, 'tray.png'))
   const contextMenu = Menu.buildFromTemplate([
     // { label: '显示', click: () => showMainWindow() },
+    { label: '设置', click: () => navigate('/settings') },
+    // { label: '上一张', click: () => previousImage() },
+    { label: '下一张', click: () => imageChanger.nextImage() },
+    { label: '保存当前壁纸', click: () => imageChanger.saveCurrentImage() },
     { label: '退出', click: () => app.exit(0) },
   ])
 
   tray.setToolTip("Sirga's Wallpaper")
   tray.setContextMenu(contextMenu)
-  /*
   tray.on('click', () => {
     const visible = mainWindow.isVisible();
     visible ? mainWindow.hide() : mainWindow.show()
     mainWindow.setSkipTaskbar(!visible)
   })
-  */
+}
+
+function initApp() {
+  if (!getSettings('imgSrc')) {
+    saveSettings('categories', ['美女']);
+    saveSettings('imgSrc', 'lovewallpaper');
+    saveSettings('interval', 10);
+    saveSettings('savePath', require('path').join(app.getPath('pictures'), 'wallpapers'));
+    saveSettings('preDownload', true);
+  }
+}
+
+function initDB() {
+  if (!db.read('total')) {
+    for (let category of Constant.Categories) {
+      db.set(`${category}:cnt`, 0);
+    }
+    db.set('total', 1);
+  }
+}
+
+function initIPC() {
+  ipcMain.on('updateCategories', () => {
+    imageChanger.updateCategories();
+  });
+  ipcMain.on('updateInterval', () => {
+    imageChanger.updateInterval();
+  })
+  ipcMain.on('openDirDialog', (event) => {
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+    }, (filePaths => {
+      if (filePaths) {
+        event.sender.send('openedDir', filePaths[0]);
+      }
+    }))
+  })
 }
 
 app.on('ready', () => {
+  initApp()
+  initDB()
+  imageChanger = new ImageChanger();
   createTray()
   createWindow()
-  new ImageChanger('动漫')
+  initIPC()
 })
 
 // auto launch
@@ -93,9 +147,9 @@ wallpaperLauncher.isEnabled()
     }
     wallpaperLauncher.enable();
   })
-  .catch(function(err){
-    // handle error
-  });
+  // .catch(function(err){
+  //   handle error
+  // });
 
 /**
  * Auto Updater

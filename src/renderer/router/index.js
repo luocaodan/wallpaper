@@ -1,15 +1,16 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import {ipcRenderer} from "electron";
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
-    {
-      path: '/',
-      name: 'main',
-      component: require('@/components/Main').default
-    },
+    // {
+    //   path: '/',
+    //   name: 'gallery',
+    //   component: require('@/components/Gallery').default
+    // },
     {
       path: '/settings',
       name: 'settings',
@@ -17,7 +18,15 @@ export default new Router({
     },
     {
       path: '*',
-      redirect: '/'
+      redirect: '/settings'
     }
   ]
 })
+
+
+ipcRenderer.on('navigate', (event, route) => {
+  router.push(route);
+});
+
+
+export default router;

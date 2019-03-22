@@ -2,23 +2,44 @@ import {app} from 'electron'
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
+import db from '../../datastore'
+import {getSettings} from "../../configuration";
+import Logger from "../../logger";
+
+const dataPath = app.getPath('userData')
+const imgPath = path.join(dataPath, 'wallpapers')
 
 export default class ImageService {
-  constructor(category) {
+  constructor(category, cnt) {
     this.category = category;
     this.endpoint = endpointMap[category];
-    this.count = 0;
+    this.count = cnt;
     this.prePath = ''
+    // 正在下载的文件
+    this.pendings = [];
+    this.gettingNext = false;
   }
 
   getNextImage() {
-    const dataPath = app.getPath('userData')
-    const imgPath = path.join(dataPath, 'wallpapers')
+    if (this.gettingNext) {
+      return new Promise((resolve, reject) => {
+        reject('downloading');
+      })
+    }
     if (!fs.existsSync(imgPath)) {
-      fs.mkdir(imgPath);
+      fs.mkdirSync(imgPath);
     }
     const filename = `${this.category}-${this.count}`;
     const filepath = path.join(imgPath, filename);
+    if (fs.existsSync(filepath) && !this.pendings.includes(filepath)) {
+      Logger.log('hit: ' + filepath)
+      return new Promise((resolve, reject) => {
+        this.iterateNext(filepath)
+        resolve(filepath);
+      })
+    }
+    Logger.log('downloading: ' + filepath)
+    this.gettingNext = true;
     const imagesDataUrl = this.getImagesDataUrl();
     return this.getImagesData(imagesDataUrl)
       .then((res) => {
@@ -28,6 +49,17 @@ export default class ImageService {
         const wallpapers = data.res.wallpaper;
         const index = this.count % 20;
         const imgId = wallpapers[index].id;
+        if (getSettings('preDownload')) {
+          for (let k = index + 1;k < 20;k++) {
+            const filename = `${this.category}-${this.count+k-index}`;
+            const sleep = Math.floor(Math.random() * 5);
+            setTimeout(() => {
+              this.preDownload(
+                wallpapers[k].id, path.join(imgPath, filename)
+              );
+            }, sleep * 1000);
+          }
+        }
         return this.getImage(imgId);
       })
       .then(res => {
@@ -35,11 +67,35 @@ export default class ImageService {
         reader.pipe(fs.createWriteStream(filepath))
         return new Promise((resolve, reject) => {
           reader.on('end', () => {
-            this.count++
-            this.deletePrevious();
-            this.prePath = filepath;
+            this.gettingNext = false;
+            this.iterateNext(filepath)
             resolve(filepath)
           })
+        })
+      })
+      .catch(e => {
+        this.gettingNext = false;
+        Logger.error(e);
+      })
+  }
+
+  iterateNext(filepath) {
+    this.count++
+    db.set(`${this.category}:cnt`, this.count)
+    this.deletePrevious();
+    this.prePath = filepath;
+  }
+
+  preDownload(imgId, filepath) {
+    Logger.log('predownloading: ' + filepath);
+    this.pendings.push(filepath);
+    this.getImage(imgId)
+      .then(res => {
+        const reader = res.data;
+        reader.pipe(fs.createWriteStream(filepath))
+        reader.on('end', () => {
+          const pIndex = this.pendings.findIndex((i) => i === filepath);
+          this.pendings.splice(pIndex, 1);
         })
       })
   }
@@ -70,11 +126,16 @@ export default class ImageService {
   }
 
   deletePrevious() {
-    if (this.prePath === '') {
-      return;
-    }
-    if (fs.existsSync(this.prePath)) {
-      fs.unlink(this.prePath)
+    const files = fs.readdirSync(imgPath);
+    for (let file of files) {
+      if (file.startsWith(`${this.category}-`)) {
+        const cnt = parseInt(file.split('-')[1]);
+        if (cnt < this.count - 2) {
+          const delPath = path.join(imgPath, file);
+          fs.unlink(delPath);
+          Logger.log('deleted: ' + delPath);
+        }
+      }
     }
   }
 }

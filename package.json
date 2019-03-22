@@ -1,8 +1,8 @@
 {
   "name": "wallpaper",
-  "version": "0.0.1",
-  "author": "luocaodan",
-  "description": "An electron-vue project",
+  "version": "0.0.2",
+  "author": "luocaodan <luocaodan@163.com>",
+  "description": "Auto Wallpaer Changer",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
-    "dev": "node .electron-vue/dev-runner.js",
+    "dev": "node $NODE_DEBUG_OPTION .electron-vue/dev-runner.js",
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
@@ -53,13 +53,17 @@
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "icon": "build/icons/icon.png"
+      "icon": "build/icons",
+      "target": "deb",
+      "category": "Utility"
     }
   },
   "dependencies": {
     "animejs": "^3.0.1",
     "auto-launch": "^5.0.5",
     "axios": "^0.18.0",
+    "element-ui": "^2.6.2",
+    "nconf": "^0.10.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
     "vue-router": "^3.0.1",
