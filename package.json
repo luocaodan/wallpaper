@@ -3,6 +3,7 @@
   "version": "0.0.2",
   "author": "luocaodan <luocaodan@163.com>",
   "description": "Auto Wallpaer Changer",
+  "homepage": "https://github.com/luocaodan/wallpaper",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
