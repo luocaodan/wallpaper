@@ -40,13 +40,12 @@ function createWindow() {
   mainWindow.loadURL(winURL)
 
   mainWindow.on('ready-to-show', () => {
-    // mainWindow.show()
+    // do nothing
   })
 
   mainWindow.on('close', (event) => {
     event.preventDefault()
-    mainWindow.hide()
-    mainWindow.setSkipTaskbar(true)
+    hideMainWindow()
   })
 
   mainWindow.on('show', () => {
@@ -60,6 +59,11 @@ function createWindow() {
 function showMainWindow() {
   mainWindow.setSkipTaskbar(false)
   mainWindow.show()
+}
+
+function hideMainWindow() {
+  mainWindow.hide()
+  mainWindow.setSkipTaskbar(true)
 }
 
 function navigate(route) {
@@ -122,6 +126,9 @@ function initIPC() {
       }
     }))
   })
+  ipcMain.on('closeSettings', () => {
+    hideMainWindow();
+  })
 }
 
 app.on('ready', () => {
@@ -133,23 +140,25 @@ app.on('ready', () => {
   initIPC()
 })
 
-// auto launch
-const wallpaperLauncher = new AutoLaunch({
-  name: 'wallpaper'
-})
-
-wallpaperLauncher.enable()
-
-wallpaperLauncher.isEnabled()
-  .then(function(isEnabled){
-    if(isEnabled){
-      return;
-    }
-    wallpaperLauncher.enable();
+if (process.env.NODE_ENV !== 'development') {
+  // auto launch
+  const wallpaperLauncher = new AutoLaunch({
+    name: 'wallpaper'
   })
+
+  wallpaperLauncher.enable()
+
+  wallpaperLauncher.isEnabled()
+    .then(function (isEnabled) {
+      if (isEnabled) {
+        return;
+      }
+      wallpaperLauncher.enable();
+    })
   // .catch(function(err){
   //   handle error
   // });
+}
 
 /**
  * Auto Updater

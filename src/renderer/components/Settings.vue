@@ -1,6 +1,11 @@
 <template>
   <div class="settings">
-    <h1 class="settings-title">设置</h1>
+    <div class="settings-title clearFloat">
+      <span>设置</span>
+      <i class="el-icon-close btn-like floatRight"
+         @click="closeSettings">
+      </i>
+    </div>
     <el-form ref="settingsForm" :model="settings" label-width="80px">
       <el-form-item label="图片源">
         <el-select v-model="settings.imgSrc" @change="save('imgSrc')">
@@ -79,6 +84,9 @@
             this.save('savePath');
           }
         })
+      },
+      closeSettings() {
+        ipcRenderer.send('closeSettings');
       }
     }
   }
@@ -89,8 +97,18 @@
   }
 
   .settings-title {
-    padding-bottom: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #DCDFE6;
+  }
+
+  .settings-title > * {
+    font-size: 2em;
+    color: #303133;
+  }
+
+  .settings-title > i {
+    color: #606266;
   }
 
   .interval-slider {
@@ -101,5 +119,9 @@
   .save-path {
     margin-right: 10px;
     color: #303133;
+  }
+  
+  .btn-like:hover {
+    cursor: pointer;
   }
 </style>

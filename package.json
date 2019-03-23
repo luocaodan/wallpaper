@@ -54,13 +54,12 @@
       "allowToChangeInstallationDirectory": true
     },
     "linux": {
-      "icon": "build/icons",
+      "icon": "build/icons/icon.icns",
       "target": "deb",
       "category": "Utility"
     }
   },
   "dependencies": {
-    "animejs": "^3.0.1",
     "auto-launch": "^5.0.5",
     "axios": "^0.18.0",
     "element-ui": "^2.6.2",
