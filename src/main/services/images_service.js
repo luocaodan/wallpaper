@@ -5,6 +5,7 @@ import path from 'path'
 import db from '../../datastore'
 import {getSettings} from "../../configuration";
 import Logger from "../../logger";
+import Tool from "../tools/tool";
 
 const dataPath = app.getPath('userData')
 const imgPath = path.join(dataPath, 'wallpapers')
@@ -14,17 +15,26 @@ export default class ImageService {
     this.category = category;
     this.endpoint = endpointMap[category];
     this.count = cnt;
-    this.prePath = ''
+    this.prePath = '';
     // 正在下载的文件
     this.pendings = [];
     this.gettingNext = false;
   }
 
-  getNextImage() {
+  getNextImage(isPrevious) {
     if (this.gettingNext) {
       return new Promise((resolve, reject) => {
-        reject('downloading');
+        reject('concurrent error: downloading');
       })
+    }
+    if (isPrevious) {
+      // 上一张
+      this.count -= 2;
+      if (this.count < 0) {
+        return new Promise((resolve, reject) => {
+          reject('previous end')
+        })
+      }
     }
     if (!fs.existsSync(imgPath)) {
       fs.mkdirSync(imgPath);
@@ -35,6 +45,7 @@ export default class ImageService {
       Logger.log('hit: ' + filepath)
       return new Promise((resolve, reject) => {
         this.iterateNext(filepath)
+        Logger.log(filepath)
         resolve(filepath);
       })
     }
@@ -76,6 +87,9 @@ export default class ImageService {
       .catch(e => {
         this.gettingNext = false;
         Logger.error(e);
+        return new Promise((resolve, reject) => {
+          reject(filepath);
+        })
       })
   }
 
@@ -88,6 +102,9 @@ export default class ImageService {
 
   preDownload(imgId, filepath) {
     Logger.log('predownloading: ' + filepath);
+    if(fs.existsSync(filepath)) {
+      return;
+    }
     this.pendings.push(filepath);
     this.getImage(imgId)
       .then(res => {
@@ -97,6 +114,11 @@ export default class ImageService {
           const pIndex = this.pendings.findIndex((i) => i === filepath);
           this.pendings.splice(pIndex, 1);
         })
+      })
+      .catch(e => {
+        Logger.error(`predownload error: ${filepath}, deleting`)
+        // 删除失败文件
+        Tool.deleteFile(filepath);
       })
   }
 
@@ -132,11 +154,14 @@ export default class ImageService {
         const cnt = parseInt(file.split('-')[1]);
         if (cnt < this.count - 2) {
           const delPath = path.join(imgPath, file);
-          fs.unlink(delPath);
-          Logger.log('deleted: ' + delPath);
+          Tool.deleteFile(delPath);
         }
       }
     }
+  }
+
+  isEmpty() {
+    return this.count === 0;
   }
 }
 

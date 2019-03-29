@@ -4,6 +4,7 @@ import AutoLaunch from 'auto-launch'
 import {getSettings, saveSettings} from "../configuration";
 import db from '../datastore';
 import Constant from "../constant";
+import Logger from "../logger";
 
 /**
  * Set `__static` path to static files in production
@@ -16,6 +17,7 @@ if (process.env.NODE_ENV !== 'development') {
 // 系统托盘
 
 let mainWindow
+let contextMenu
 let tray
 let imageChanger
 const winURL = process.env.NODE_ENV === 'development'
@@ -73,12 +75,13 @@ function navigate(route) {
 
 function createTray() {
   tray = new Tray(require('path').join(__static, 'tray.png'))
-  const contextMenu = Menu.buildFromTemplate([
+  contextMenu = Menu.buildFromTemplate([
     // { label: '显示', click: () => showMainWindow() },
     { label: '设置', click: () => navigate('/settings') },
-    // { label: '上一张', click: () => previousImage() },
+    { label: '上一张', click: () => imageChanger.previousImage() },
     { label: '下一张', click: () => imageChanger.nextImage() },
     { label: '保存当前壁纸', click: () => imageChanger.saveCurrentImage() },
+    { label: '打包日志', click: () => Logger.packLogs() },
     { label: '退出', click: () => app.exit(0) },
   ])
 
@@ -89,6 +92,19 @@ function createTray() {
     visible ? mainWindow.hide() : mainWindow.show()
     mainWindow.setSkipTaskbar(!visible)
   })
+}
+
+export function disablePreviousImage() {
+  contextMenu.items[1].enabled = false;
+  tray.setContextMenu(contextMenu);
+}
+
+export function enablePreviousImage() {
+  if (contextMenu.items[1].enabled) {
+    return;
+  }
+  contextMenu.items[1].enabled = true;
+  tray.setContextMenu(contextMenu);
 }
 
 function initApp() {

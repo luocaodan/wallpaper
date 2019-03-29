@@ -5,6 +5,8 @@ import db from '../../datastore'
 import Logger from "../../logger";
 import fs from 'fs';
 import path from 'path'
+import Tool from "./tool";
+import {disablePreviousImage, enablePreviousImage} from "../index";
 
 export default class ImageChanger {
   constructor() {
@@ -21,11 +23,15 @@ export default class ImageChanger {
     this.resetChanger();
     this.imagesServices = [];
     const categories = getSettings('categories');
+    let total = 0;
     for (let category of categories) {
+      let cnt = db.read(`${category}:cnt`);
       this.imagesServices.push(
-        new ImagesService(category, db.read(`${category}:cnt`))
+        new ImagesService(category, cnt)
       );
+      total += cnt;
     }
+    db.set('total', total);
     this.startChanger();
   }
 
@@ -42,26 +48,54 @@ export default class ImageChanger {
     }, this.interval)
   }
 
-  change() {
+  change(isPrevious = false) {
     if (this.setting) {
       return;
     }
+    const total = db.read('total');
+    if (total === 0) {
+      disablePreviousImage();
+      return;
+    }
     Logger.log('changer start');
-    const randIndex = Math.floor(Math.random() * this.imagesServices.length);
-    this.imagesServices[randIndex].getNextImage()
+    const indexs = Array.from({length: this.imagesServices.length}, (v, k) => k);
+    let [randIndex, chooseIndex] = Tool.randChoose(indexs);
+    if (isPrevious) {
+      // 查找 count 不为 0 的分类
+      while (this.imagesServices[randIndex].isEmpty()) {
+        indexs.splice(chooseIndex, 1);
+        [randIndex, chooseIndex] = Tool.randChoose(indexs);
+      }
+    }
+    this.imagesServices[randIndex].getNextImage(isPrevious)
       .then((filepath) => {
         this.setting = true;
-        Logger.log('setting wallpaper: ' + filepath)
+        Logger.log('setting wallpaper: ' + filepath);
         this.currentFilePath = filepath;
-        db.set('currentFilePath', filepath);
         return wallpaper.set(filepath)
       })
       .then(() => {
         this.setting = false;
-        Logger.log('changer end')
+        db.set('currentFilePath', this.currentFilePath);
+        Logger.log('changer end');
+        enablePreviousImage();
+        let tmp = db.read('total');
+        tmp = isPrevious? tmp - 1 : tmp + 1;
+        db.set('total', tmp);
       })
       .catch(e => {
-        Logger.error(e);
+        if (e.startsWith('concurrent')) {
+          Logger.error(e);
+          return;
+        }
+        if (e.startsWith('previous')) {
+          return;
+        }
+        // 删除失败文件
+        Logger.error(`download or set ${this.currentFilePath} error, deleting...`)
+        const filepath = e;
+        Tool.deleteFile(filepath);
+        Logger.log('changer end');
       })
   }
 
@@ -92,6 +126,12 @@ export default class ImageChanger {
   nextImage() {
     this.resetChanger();
     this.change();
+    this.startChanger();
+  }
+
+  previousImage() {
+    this.resetChanger();
+    this.change(true);
     this.startChanger();
   }
 }

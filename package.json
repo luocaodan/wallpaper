@@ -1,10 +1,10 @@
 {
   "name": "wallpaper",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "luocaodan <luocaodan@163.com>",
-  "description": "Auto Wallpaer Changer",
+  "description": "Auto Wallpaper Changer",
   "homepage": "https://github.com/luocaodan/wallpaper",
-  "license": null,
+  "license": "MIT",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
