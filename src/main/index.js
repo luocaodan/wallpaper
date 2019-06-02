@@ -14,6 +14,12 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
+// 省电拦截
+const { powerSaveBlocker } = require('electron')
+
+const id = powerSaveBlocker.start('prevent-app-suspension')
+powerSaveBlocker.stop(id)
+
 // 系统托盘
 
 let mainWindow
