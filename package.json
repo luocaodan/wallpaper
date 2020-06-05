@@ -2,6 +2,7 @@
   "name": "wallpaper",
   "version": "0.0.6",
   "description": "Auto Wallpaper Changer",
+  "homepage": "https://github.com/luocaodan/wallpaper",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
@@ -11,7 +12,7 @@
   "keywords": [
     "wallpaper"
   ],
-  "author": "luocaodan",
+  "author": "luocaodan <luocaodan@163.com>",
   "license": "ISC",
   "build": {
     "productName": "Wallpaper",
