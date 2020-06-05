@@ -1,0 +1,63 @@
+{
+  "name": "wallpaper",
+  "version": "0.0.6",
+  "description": "Auto Wallpaper Changer",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "wallpaper"
+  ],
+  "author": "luocaodan",
+  "license": "ISC",
+  "build": {
+    "productName": "Wallpaper",
+    "appId": "com.sirga.wallpaper",
+    "directories": {
+      "output": "build"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    },
+    "mac": {
+      "icon": "static/img/icon.icns"
+    },
+    "win": {
+      "icon": "static/img/icon.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "icon": "static/img/icon.icns",
+      "target": "deb",
+      "category": "Utility"
+    }
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.5",
+    "axios": "^0.19.2",
+    "nconf": "^0.10.0",
+    "wallpaper": "^4.4.1"
+  },
+  "devDependencies": {
+    "electron": "^8.3.0"
+  }
+}

@@ -1,0 +1,43 @@
+.settings {
+  margin: 20px;
+}
+
+.settings-title {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #DCDFE6;
+}
+
+.settings-title > * {
+  font-size: 2em;
+  color: #303133;
+}
+
+.settings-title > i {
+  color: #606266;
+}
+
+.interval-slider {
+  width: 50%;
+  margin: 0 10px;
+}
+
+.btn-like:hover {
+  cursor: pointer;
+}
+
+.floatRight {
+  float: right;
+}
+
+.clearFloat:before {
+  content: "";
+  clear: both;
+  display: block;;
+}
+
+.clearFloat:after {
+  content: "";
+  clear: both;
+  display: block;;
+}
