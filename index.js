@@ -24,17 +24,15 @@ function createWindow() {
     show: false,
     icon: './static/img/icon.png'
   })
-  mainWindow.webContents.openDevTools()
 
   if (process.platform === 'darwin') {
     app.dock.setIcon(path.join(__dirname, 'static/img/icon.png'))
   }
 
   mainWindow.loadFile("index.html")
-  // mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
-    app.dock.hide()
+    hideDock()
   })
 
   mainWindow.on('close', (event) => {
@@ -46,9 +44,7 @@ function createWindow() {
     showDock()
   })
   mainWindow.on('hide', () => {
-    if (process.platform !== 'darwin') {
-      hideDock()
-    }
+    hideDock()
   })
 }
 
@@ -64,16 +60,17 @@ function hideMainWindow() {
 }
 
 function showDock() {
-  Menu.setApplicationMenu();
   if (process.platform === 'darwin') {
     app.dock.setIcon(path.join(__dirname, 'static/img/icon.png'))
+    app.dock.show()
   }
-  app.dock.show()
 }
 
 function hideDock() {
-  Menu.setApplicationMenu(null);
-  app.dock.hide()
+  if (process.platform === 'darwin') {
+    app.dock.hide()
+
+  }
 }
 
 function createTray() {
