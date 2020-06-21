@@ -1,5 +1,5 @@
-const {app, Menu, Tray, BrowserWindow, nativeImage, powerSaveBlocker} = require('electron')
-const {init} = require('./init.js')
+const {app, Menu, Tray, BrowserWindow, nativeImage, powerSaveBlocker, ipcMain} = require('electron')
+const {initDB} = require('./init.js')
 const imageChanger = require('./tools/image_changer')
 const autoLaunch = require('./auto_lanuch')
 const Logger = require("./logger")
@@ -97,12 +97,34 @@ function createTray() {
 }
 
 app.on('ready', () => {
-  init()
+  initDB()
+  initIPC()
   createTray()
   createWindow()
   // 是否开机启动
   autoLaunch.process()
 })
+
+function initIPC() {
+  ipcMain.on('updateCategories', () => {
+    imageChanger.updateCategories();
+  });
+  ipcMain.on('updateInterval', () => {
+    imageChanger.updateInterval();
+  })
+  ipcMain.on('openDirDialog', (event) => {
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+    }, (filePaths => {
+      if (filePaths) {
+        event.sender.send('openedDir', filePaths[0]);
+      }
+    }))
+  })
+  ipcMain.on('closeSettings', () => {
+    hideMainWindow();
+  })
+}
 
 exports.hideMainWindow = hideMainWindow
 

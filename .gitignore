@@ -2,3 +2,5 @@ node_modules
 build
 .idea
 *.iml
+yarn-error.log
+.vscode

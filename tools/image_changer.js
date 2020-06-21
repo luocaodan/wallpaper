@@ -1,6 +1,7 @@
 const ImagesService = require("../services/images_service");
 const wallpaper = require('wallpaper')
 const {getSettings} = require("../configuration");
+const {initSettings} = require("../init")
 const db = require('../datastore')
 const Logger = require("../logger")
 const fs = require('fs');
@@ -8,8 +9,10 @@ const path = require('path')
 const Tool = require("./tool");
 const UI = require("../index")
 
+
 class ImageChanger {
   constructor() {
+    initSettings()
     this.changer = null;
     this.imagesServices = [];
     this.updateInterval();
@@ -57,7 +60,6 @@ class ImageChanger {
     const total = db.read('total');
     if (total === 0) {
       UI.disablePreviousImage();
-      return;
     }
     Logger.log('changer start');
     const indexs = Array.from({length: this.imagesServices.length},
