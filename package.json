@@ -56,7 +56,7 @@
   "dependencies": {
     "auto-launch": "^5.0.5",
     "axios": "^0.19.2",
-    "nconf": "^0.10.0",
+    "nconf": "^0.11.4",
     "wallpaper": "^4.4.1"
   },
   "devDependencies": {
